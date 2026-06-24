@@ -1,11 +1,12 @@
-# Lockwell — single-node deployment (prebuilt image).
+# Lockwell — single-node deployment.
 #
-# This pulls the published, multi-arch image (linux/amd64 + linux/arm64) and
-# runs a complete, self-contained S3-compatible object store: ONE container,
+# The local Dockerfile assembles a thin runtime image from the OFFICIAL prebuilt
+# binary (downloaded + checksum-verified at build time — no source is compiled),
+# then runs a complete, self-contained S3-compatible object store: ONE container,
 # ONE data volume, the embedded metadata engine, always-on at-rest encryption.
 # There is no external database, message broker, or cache to run alongside it.
 #
-# Before the first `docker compose up -d`, create a .env beside this file
+# Before the first `docker compose up -d --build`, create a .env beside this file
 # (copy .env.example) with at least:
 #   LOCKWELL_ROOT_ACCESS_KEY_ID=...   # your initial S3 access key id
 #   LOCKWELL_ROOT_SECRET_KEY=...      # a long random secret
@@ -13,10 +14,14 @@
 
 services:
   lockwell:
-    # Pinned, multi-arch image. Override the tag with LOCKWELL_IMAGE in .env to
-    # move between releases (e.g. LOCKWELL_IMAGE=ghcr.io/kelphect/lockwell:0.2).
-    image: ${LOCKWELL_IMAGE:-ghcr.io/kelphect/lockwell:0.2.1}
-    pull_policy: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Which released binary to bake in. Bump in .env to upgrade, then
+        # `docker compose up -d --build`.
+        LOCKWELL_VERSION: ${LOCKWELL_VERSION:-0.2.1}
+    image: ${LOCKWELL_IMAGE:-lockwell:0.2.1}
     restart: unless-stopped
     ports:
       # S3 + native API — attach your domain / TLS proxy to THIS port (public).
