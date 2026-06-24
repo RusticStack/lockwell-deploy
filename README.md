@@ -280,15 +280,16 @@ docker compose start lockwell
 
 ## Updating
 
-Pin a tag in `.env` (`LOCKWELL_IMAGE=ghcr.io/kelphect/lockwell:0.2.1`) for reproducible deploys, then bump it and:
+Pin `LOCKWELL_VERSION` in `.env` for reproducible deploys. To upgrade, bump it to a new
+[release](https://github.com/KelpHect/lockwell-deploy/releases) and rebuild:
 
 ```bash
-docker compose pull
-docker compose up -d
+git pull
+docker compose up -d --build
 ```
 
-Compose recreates the container with the new image and reattaches the existing `lockwell-data` volume. The metadata
-engine opens **in place** — there is no external migration step. Watch the logs and confirm `/readyz` returns 200.
+Compose rebuilds the image from the new binary and reattaches the existing `lockwell-data` volume. The metadata engine
+opens **in place** — there is no external migration step. Watch the logs and confirm `/readyz` returns 200.
 
 When running without Docker, download the new release archive, replace the binaries, and restart the service.
 
