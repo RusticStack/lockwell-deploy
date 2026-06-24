@@ -11,13 +11,13 @@
 #   LOCKWELL_ROOT_TENANT          tenant id to create/use (default: root)
 #
 # Optionally it also creates the first admin WEB-UI user (separate from the S3
-# access key above — the UI uses a bcrypt username/password login), when set:
+# access key above; the UI uses a bcrypt username/password login), when set:
 #
 #   LOCKWELL_ADMIN_USERNAME       admin UI login (e.g. "admin")
 #   LOCKWELL_ADMIN_PASSWORD       its password
 #   LOCKWELL_ADMIN_ROLE           owner | operator | viewer (default: owner)
 #
-# It is idempotent — on every restart the create commands tolerate "already
+# It is idempotent. On every restart the create commands tolerate "already
 # exists", so credentials are created exactly once and never clobbered. Omit the
 # env vars to skip bootstrap entirely (e.g. you provision keys out of band).
 set -e
@@ -61,7 +61,7 @@ if [ "$1" = "lockwelld" ] && [ -n "$LOCKWELL_ROOT_ACCESS_KEY_ID" ] && [ -n "$LOC
 	tenant="${LOCKWELL_ROOT_TENANT:-root}"
 	echo "lockwell: first-boot bootstrap for tenant '${tenant}' (idempotent)..."
 	# These run offline against the embedded store and generate the at-rest
-	# master key (if encryption is on) that the daemon then loads — same config,
+	# master key (if encryption is on) that the daemon then loads, using the same config,
 	# same data dir, so the keys agree. '|| true' makes a restart a no-op.
 	lockwell tenant-create "${tenant}" --yes >/dev/null 2>&1 || true
 	lockwell key-create root --tenant "${tenant}" \

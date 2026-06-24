@@ -1,4 +1,4 @@
-# Lockwell runtime image — assembled from the official prebuilt binary.
+# Lockwell runtime image, assembled from the official prebuilt binary.
 #
 # No source is compiled here. The first stage only DOWNLOADS the released,
 # checksum-verified static binary for the build host's architecture and the

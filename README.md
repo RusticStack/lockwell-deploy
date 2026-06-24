@@ -1,4 +1,4 @@
-# Lockwell — deployment
+# Lockwell deployment
 
 Run **Lockwell**, a single-node, S3-compatible object store, on your own infrastructure.
 
@@ -6,13 +6,13 @@ Lockwell runs as **one container** (or one binary) backed by **one data director
 the embedded metadata engine, and always-on at-rest encryption, all in one process. There is **no external database,
 message broker, or cache** to run alongside it.
 
-This repository contains everything you need to **deploy and operate** a Lockwell node — a `Dockerfile` and
+This repository contains everything you need to **deploy and operate** a Lockwell node: a `Dockerfile` and
 `docker-compose.yml` that assemble a thin runtime image from the official prebuilt binary, an `.env` template, the
 production config, and reverse-proxy examples. **No source is compiled**: the image build only downloads the
 checksum-verified static binary. Prebuilt binaries for **Linux** (`amd64`, `arm64`) and **Windows** (`amd64`, `arm64`)
 are attached to each [release](https://github.com/KelpHect/lockwell-deploy/releases).
 
-- **Documentation:** <https://lockwell.dev>
+- **Documentation:** <https://lockwell.rusticstack.com>
 
 ---
 
@@ -60,7 +60,7 @@ Generate strong secrets with `openssl rand -hex 32`. Then start it:
 docker compose up -d --build
 ```
 
-The `--build` step assembles a thin runtime image from the official prebuilt binary — it downloads and checksum-verifies
+The `--build` step assembles a thin runtime image from the official prebuilt binary. It downloads and checksum-verifies
 the released static binary for your architecture and wraps it in a slim Debian base. **No source is compiled.** Compose
 then runs an **idempotent first-boot bootstrap** (creates the root tenant, the root S3 access key, and optionally the
 first admin user) and starts the daemon. Restarts never clobber your credentials. Verify it is up:
@@ -73,7 +73,7 @@ docker compose logs -f lockwell
 
 ### Without Compose: `docker build` + `docker run`
 
-Build the runtime image once (this downloads and verifies the official binary — no source), then run it against a single
+Build the runtime image once (this downloads and verifies the official binary, no source compiled), then run it against a single
 named volume that holds all state:
 
 ```bash
@@ -109,12 +109,12 @@ same `.env` variables as deploy secrets. Keep port **9001** off the public domai
 ## Deploy without Docker
 
 Prebuilt binaries for **Linux** (`amd64`, `arm64`) and **Windows** (`amd64`, `arm64`) are attached to every
-[release](https://github.com/KelpHect/lockwell-deploy/releases). They are static and have no runtime dependencies — no
-libc to match, no external database. Each archive contains:
+[release](https://github.com/KelpHect/lockwell-deploy/releases). They are static and have no runtime dependencies (no
+libc to match, no external database). Each archive contains:
 
-- `lockwelld` (`lockwelld.exe` on Windows) — the server (S3 API + native API + admin UI + metrics).
-- `lockwell` (`lockwell.exe` on Windows) — the CLI (tenant/key/admin creation, backup/restore, repair).
-- `lockwell.production.toml` — the production config.
+- `lockwelld` (`lockwelld.exe` on Windows): the server (S3 API + native API + admin UI + metrics).
+- `lockwell` (`lockwell.exe` on Windows): the CLI (tenant/key/admin creation, backup/restore, repair).
+- `lockwell.production.toml`: the production config.
 
 ### Linux
 
@@ -209,7 +209,7 @@ with a TLS-terminating reverse proxy as below.
 | **9000** | published (public)    | S3 API, the native API (`/api/v1`), bearer token mint, signed URLs, `/health` `/readyz` |
 | **9001** | `127.0.0.1` (private) | Admin web UI (`/admin`), JSON Admin API (`/admin/api/v1`), Prometheus `/metrics`        |
 
-Put a TLS-terminating reverse proxy in front of port **9000**. **Keep port 9001 private** — `/metrics` is
+Put a TLS-terminating reverse proxy in front of port **9000**. **Keep port 9001 private**. `/metrics` is
 **unauthenticated**. Reach the admin port over an SSH tunnel or a firewalled private network, and never attach a public
 domain to it:
 
@@ -243,12 +243,12 @@ ufw enable
 
 ## Where the data and master key live
 
-All state — object blobs, the embedded metadata engine, and the auto-generated at-rest **master key** — lives in the
+All state (object blobs, the embedded metadata engine, and the auto-generated at-rest **master key**) lives in the
 single `lockwell-data` volume mounted at `/var/lib/lockwell` (or your `storage.data_dir` when running without Docker).
 The master key is written there during first-boot bootstrap.
 
 > **Back up the master key separately.** Losing the master key makes the encrypted data unrecoverable. A volume snapshot
-> alone is not key separation — copy the key to a different location, or mount it from a secret with
+> alone is not key separation. Copy the key to a different location, or mount it from a secret with
 > `LOCKWELL_MASTER_KEY_FILE` so a data-volume loss is recoverable.
 
 ---
@@ -289,7 +289,7 @@ docker compose up -d --build
 ```
 
 Compose rebuilds the image from the new binary and reattaches the existing `lockwell-data` volume. The metadata engine
-opens **in place** — there is no external migration step. Watch the logs and confirm `/readyz` returns 200.
+opens **in place**, with no external migration step. Watch the logs and confirm `/readyz` returns 200.
 
 When running without Docker, download the new release archive, replace the binaries, and restart the service.
 
@@ -317,7 +317,7 @@ default: an acked write survives sudden power loss).
 
 ## Support and terms
 
-Full product, SDK, and operations documentation lives at <https://lockwell.dev>.
+Full product, SDK, and operations documentation lives at <https://lockwell.rusticstack.com>.
 
 The image and binaries published here are distributed as compiled artifacts for self-hosting. They are provided **as is,
 without warranty**. This repository contains deployment material only.

@@ -1,7 +1,7 @@
-# Lockwell — single-node deployment.
+# Lockwell single-node deployment.
 #
 # The local Dockerfile assembles a thin runtime image from the OFFICIAL prebuilt
-# binary (downloaded + checksum-verified at build time — no source is compiled),
+# binary (downloaded + checksum-verified at build time, no source is compiled),
 # then runs a complete, self-contained S3-compatible object store: ONE container,
 # ONE data volume, the embedded metadata engine, always-on at-rest encryption.
 # There is no external database, message broker, or cache to run alongside it.
@@ -24,10 +24,10 @@ services:
     image: ${LOCKWELL_IMAGE:-lockwell:0.2.1}
     restart: unless-stopped
     ports:
-      # S3 + native API — attach your domain / TLS proxy to THIS port (public).
+      # S3 + native API. Attach your domain / TLS proxy to THIS port (public).
       - "${LOCKWELL_S3_PORT:-9000}:9000"
       # Admin web UI + UNAUTHENTICATED Prometheus /metrics. Bound to 127.0.0.1 by
-      # default so it is NOT reachable from the internet — reach it over an SSH
+      # default so it is NOT reachable from the internet; reach it over an SSH
       # tunnel / private network, or set LOCKWELL_ADMIN_BIND=0.0.0.0 and firewall
       # it yourself. Never attach a public domain straight to /metrics.
       - "${LOCKWELL_ADMIN_BIND:-127.0.0.1}:${LOCKWELL_ADMIN_PORT:-9001}:9001"
@@ -47,12 +47,12 @@ services:
       LOCKWELL_ADMIN_ROLE: "${LOCKWELL_ADMIN_ROLE:-owner}"
     volumes:
       # ONE persistent volume holds blobs, the embedded metadata engine, AND the
-      # auto-generated at-rest master key. Back this up — losing the master key
+      # auto-generated at-rest master key. Back this up: losing the master key
       # makes the encrypted data unrecoverable.
       - lockwell-data:/var/lib/lockwell
       # The image already bakes a production config. Mounting this copy over it
       # lets you tune the config (durability, caches, rate limits) WITHOUT a
-      # rebuild — edit examples/lockwell.production.toml and recreate the
+      # rebuild: edit examples/lockwell.production.toml and recreate the
       # container. Comment this out to use the baked default unchanged.
       - ./examples/lockwell.production.toml:/etc/lockwell/lockwell.toml:ro
     healthcheck:

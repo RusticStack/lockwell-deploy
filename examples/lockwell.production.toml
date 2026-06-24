@@ -1,4 +1,4 @@
-# Lockwell — production configuration.
+# Lockwell production configuration.
 #
 # This is the same config baked into the published Docker image. docker-compose.yml
 # mounts this copy over the baked default so you can tune it WITHOUT pulling a new
@@ -13,7 +13,7 @@ listen_addr = "0.0.0.0:9000"   # S3 API + GET /health + GET /readyz (public, via
 web_addr    = "0.0.0.0:9001"   # admin web UI + Prometheus /metrics + health (KEEP PRIVATE)
 # The admin listener (web_addr) serves both the login-gated admin UI and the
 # UNAUTHENTICATED Prometheus /metrics endpoint. Do NOT expose port 9001 to the
-# public internet — bind it to a private network, reach it over a VPN/SSH tunnel,
+# public internet. Bind it to a private network, reach it over a VPN/SSH tunnel,
 # or proxy it behind extra auth. Only the S3 port (9000) is meant to be public.
 # (A third `admin_addr` slot exists, reserved for a future JSON admin REST API;
 # today it would just duplicate web_addr, so we leave it unset.)
@@ -31,7 +31,7 @@ allow_insecure_public = true
 # for config-validation back-compat but are IGNORED.
 driver = "kvmeta"
 # STRICT durability is the default: every metadata commit fsyncs the WAL before
-# returning, so an acked write survives power loss — the safe choice for a
+# returning, so an acked write survives power loss; the safe choice for a
 # single node with no replica. For higher write throughput at the cost of losing
 # at most ~10 ms of acked writes on power loss (matches Garage's data_fsync=off
 # model), uncomment sync_interval_ms below AND storage.relaxed_durability.
@@ -57,7 +57,7 @@ audit_read_async_window = "250ms"
 driver = "filesystem"
 data_dir = "/var/lib/lockwell/blobs"
 temp_dir = "/var/lib/lockwell/tmp"
-# Keep per-blob fsync ON (strict) by default — pairs with the strict metadata
+# Keep per-blob fsync ON (strict) by default; pairs with the strict metadata
 # tier above. Set true ONLY together with metadata.sync_interval_ms for the
 # grouped/throughput tier.
 # relaxed_durability = true
@@ -66,7 +66,7 @@ temp_dir = "/var/lib/lockwell/tmp"
 # Always-on at-rest encryption (object data + Badger metadata). The master key is
 # auto-generated on first boot under the data volume; for stronger separation,
 # mount it from a secret and set LOCKWELL_MASTER_KEY_FILE. Losing the master key
-# makes the data unrecoverable — back it up.
+# makes the data unrecoverable, so back it up.
 enabled = true
 algorithm = "xchacha20-poly1305"
 key_provider = "local"
@@ -77,7 +77,7 @@ allow_public_buckets = false
 max_presign_ttl = "15m"
 # Per-source-IP request cap, applied BEFORE SigV4 verification (cheap anti-abuse).
 # NOTE: behind a reverse proxy every request may share the proxy's IP, making this
-# effectively a global cap — size it for your whole node, not one client. This
+# effectively a global cap, so size it for your whole node, not one client. This
 # generous default (≈10k req/s) bounds abuse without throttling normal use; set 0
 # to disable. For a true per-tenant cap (applied AFTER auth), set
 # rate_limit_per_tenant_per_minute instead/as well.
@@ -102,7 +102,7 @@ enabled = true
 
 [audit]
 enabled = true
-# Audit events are stored in the embedded metadata engine — there is no external
+# Audit events are stored in the embedded metadata engine; there is no external
 # audit database. "metadata" is the only implemented sink.
 sink = "metadata"
 # Optional retention backstops (0 = keep forever, append-only):
@@ -120,7 +120,7 @@ secure_cookie = false
 [notifications]
 # Bucket-notification webhooks are refused at dial time when the target resolves
 # to a link-local / cloud-metadata address (169.254.169.254, fe80::/10,
-# fd00:ec2::/32) — otherwise a notification config could turn the daemon into a
+# fd00:ec2::/32), otherwise a notification config could turn the daemon into a
 # credential-theft SSRF against the instance-metadata endpoint. RFC1918 private
 # ranges and loopback are always allowed (legitimate internal webhooks). Set true
 # ONLY if you genuinely must deliver to a link-local target.
