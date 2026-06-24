@@ -1,0 +1,61 @@
+# Lockwell — single-node deployment (prebuilt image).
+#
+# This pulls the published, multi-arch image (linux/amd64 + linux/arm64) and
+# runs a complete, self-contained S3-compatible object store: ONE container,
+# ONE data volume, the embedded metadata engine, always-on at-rest encryption.
+# There is no external database, message broker, or cache to run alongside it.
+#
+# Before the first `docker compose up -d`, create a .env beside this file
+# (copy .env.example) with at least:
+#   LOCKWELL_ROOT_ACCESS_KEY_ID=...   # your initial S3 access key id
+#   LOCKWELL_ROOT_SECRET_KEY=...      # a long random secret
+# On first boot these create the initial admin tenant + access key (idempotent).
+
+services:
+  lockwell:
+    # Pinned, multi-arch image. Override the tag with LOCKWELL_IMAGE in .env to
+    # move between releases (e.g. LOCKWELL_IMAGE=ghcr.io/kelphect/lockwell:0.2).
+    image: ${LOCKWELL_IMAGE:-ghcr.io/kelphect/lockwell:0.2.1}
+    pull_policy: always
+    restart: unless-stopped
+    ports:
+      # S3 + native API — attach your domain / TLS proxy to THIS port (public).
+      - "${LOCKWELL_S3_PORT:-9000}:9000"
+      # Admin web UI + UNAUTHENTICATED Prometheus /metrics. Bound to 127.0.0.1 by
+      # default so it is NOT reachable from the internet — reach it over an SSH
+      # tunnel / private network, or set LOCKWELL_ADMIN_BIND=0.0.0.0 and firewall
+      # it yourself. Never attach a public domain straight to /metrics.
+      - "${LOCKWELL_ADMIN_BIND:-127.0.0.1}:${LOCKWELL_ADMIN_PORT:-9001}:9001"
+    environment:
+      LOCKWELL_CONFIG: /etc/lockwell/lockwell.toml
+      # First-boot bootstrap (idempotent). Required so there is never a default
+      # credential. The entrypoint fails fast at container startup if bootstrap
+      # is required and these are unset; keeping interpolation non-fatal lets
+      # `docker compose pull` work before the .env is filled in.
+      LOCKWELL_BOOTSTRAP_REQUIRED: "${LOCKWELL_BOOTSTRAP_REQUIRED:-true}"
+      LOCKWELL_ROOT_ACCESS_KEY_ID: "${LOCKWELL_ROOT_ACCESS_KEY_ID:-}"
+      LOCKWELL_ROOT_SECRET_KEY: "${LOCKWELL_ROOT_SECRET_KEY:-}"
+      LOCKWELL_ROOT_TENANT: "${LOCKWELL_ROOT_TENANT:-root}"
+      # Optional: first admin web-UI login (separate from the S3 key above).
+      LOCKWELL_ADMIN_USERNAME: "${LOCKWELL_ADMIN_USERNAME:-}"
+      LOCKWELL_ADMIN_PASSWORD: "${LOCKWELL_ADMIN_PASSWORD:-}"
+      LOCKWELL_ADMIN_ROLE: "${LOCKWELL_ADMIN_ROLE:-owner}"
+    volumes:
+      # ONE persistent volume holds blobs, the embedded metadata engine, AND the
+      # auto-generated at-rest master key. Back this up — losing the master key
+      # makes the encrypted data unrecoverable.
+      - lockwell-data:/var/lib/lockwell
+      # The image already bakes a production config. Mounting this copy over it
+      # lets you tune the config (durability, caches, rate limits) WITHOUT a
+      # rebuild — edit examples/lockwell.production.toml and recreate the
+      # container. Comment this out to use the baked default unchanged.
+      - ./examples/lockwell.production.toml:/etc/lockwell/lockwell.toml:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:9000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  lockwell-data:

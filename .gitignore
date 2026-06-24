@@ -1,0 +1,9 @@
+# Never commit real deployment secrets.
+.env
+*.env
+!.env.example
+
+# Local state / backups that may land beside the compose file.
+metadata-backup*.bin
+lockwell-data/
+*.tar.gz
