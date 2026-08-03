@@ -10,7 +10,7 @@ This repository contains everything you need to **deploy and operate** a Lockwel
 `docker-compose.yml` that assemble a thin runtime image from the official prebuilt binary, an `.env` template, the
 production config, and reverse-proxy examples. **No source is compiled**: the image build only downloads the
 checksum-verified static binary. Prebuilt binaries for **Linux** (`amd64`, `arm64`) and **Windows** (`amd64`, `arm64`)
-are attached to each [release](https://github.com/KelpHect/lockwell-deploy/releases).
+are attached to each [release](https://github.com/RusticStack/lockwell-deploy/releases).
 
 - **Documentation:** <https://lockwell.rusticstack.com>
 
@@ -35,7 +35,7 @@ are attached to each [release](https://github.com/KelpHect/lockwell-deploy/relea
 You need [Docker](https://docs.docker.com/get-docker/) with the Compose plugin.
 
 ```bash
-git clone https://github.com/KelpHect/lockwell-deploy.git
+git clone https://github.com/RusticStack/lockwell-deploy.git
 cd lockwell-deploy
 cp .env.example .env
 ```
@@ -109,7 +109,7 @@ same `.env` variables as deploy secrets. Keep port **9001** off the public domai
 ## Deploy without Docker
 
 Prebuilt binaries for **Linux** (`amd64`, `arm64`) and **Windows** (`amd64`, `arm64`) are attached to every
-[release](https://github.com/KelpHect/lockwell-deploy/releases). They are static and have no runtime dependencies (no
+[release](https://github.com/RusticStack/lockwell-deploy/releases). They are static and have no runtime dependencies (no
 libc to match, no external database). Each archive contains:
 
 - `lockwelld` (`lockwelld.exe` on Windows): the server (S3 API + native API + admin UI + metrics).
@@ -122,8 +122,8 @@ Download and unpack the archive for your architecture (replace `amd64` with `arm
 
 ```bash
 VERSION=0.2.1
-curl -fsSLO https://github.com/KelpHect/lockwell-deploy/releases/download/v${VERSION}/lockwell-${VERSION}-linux-amd64.tar.gz
-curl -fsSLO https://github.com/KelpHect/lockwell-deploy/releases/download/v${VERSION}/SHA256SUMS
+curl -fsSLO https://github.com/RusticStack/lockwell-deploy/releases/download/v${VERSION}/lockwell-${VERSION}-linux-amd64.tar.gz
+curl -fsSLO https://github.com/RusticStack/lockwell-deploy/releases/download/v${VERSION}/SHA256SUMS
 sha256sum --check --ignore-missing SHA256SUMS
 tar -xzf lockwell-${VERSION}-linux-amd64.tar.gz
 cd lockwell-${VERSION}-linux-amd64
@@ -161,11 +161,11 @@ To run it as a managed service, wrap `lockwelld` in a systemd unit (run it as a 
 ### Windows
 
 Download the `windows` archive for your architecture from the
-[release](https://github.com/KelpHect/lockwell-deploy/releases) and expand it (PowerShell):
+[release](https://github.com/RusticStack/lockwell-deploy/releases) and expand it (PowerShell):
 
 ```powershell
 $Version = "0.2.1"
-$base = "https://github.com/KelpHect/lockwell-deploy/releases/download/v$Version"
+$base = "https://github.com/RusticStack/lockwell-deploy/releases/download/v$Version"
 Invoke-WebRequest "$base/lockwell-$Version-windows-amd64.zip" -OutFile "lockwell.zip"
 Expand-Archive lockwell.zip -DestinationPath .
 Set-Location "lockwell-$Version-windows-amd64"
@@ -281,7 +281,7 @@ docker compose start lockwell
 ## Updating
 
 Pin `LOCKWELL_VERSION` in `.env` for reproducible deploys. To upgrade, bump it to a new
-[release](https://github.com/KelpHect/lockwell-deploy/releases) and rebuild:
+[release](https://github.com/RusticStack/lockwell-deploy/releases) and rebuild:
 
 ```bash
 git pull
