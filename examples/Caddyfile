@@ -1,22 +1,21 @@
-# Caddy reverse proxy for Lockwell's public S3 port.
+# Caddy reverse proxy for Lockwell's public S3/native API port.
 #
-# Caddy provisions a Let's Encrypt certificate automatically and streams request
-# bodies by default, so large PUTs and multipart parts pass straight through.
-#
-#   caddy run --config examples/Caddyfile
-#
-# Replace s3.example.com with your domain (its A/AAAA record must point here).
+# Caddy terminates HTTPS automatically and streams request bodies by default,
+# which avoids buffering large object uploads to disk. Keep Lockwell's admin
+# listener (9001) private; it exposes the admin UI and unauthenticated metrics.
 
 s3.example.com {
-	reverse_proxy 127.0.0.1:9000
-
-	# Object storage uploads large bodies. Raise the limit to match your biggest
-	# expected single PUT / multipart part.
+	# Set this to the largest single PUT or multipart part your deployment allows.
 	request_body {
 		max_size 5GB
 	}
+
+	reverse_proxy 127.0.0.1:9000 {
+		# Preserve the host used by SigV4 and signed URLs. Caddy supplies the
+		# X-Forwarded-* headers with the original scheme and client address.
+		header_up Host {host}
+	}
 }
 
-# Do NOT add a site block for port 9001 (admin UI + UNAUTHENTICATED /metrics).
-# Keep that port on localhost and reach it over an SSH tunnel:
-#   ssh -L 9001:127.0.0.1:9001 youruser@yourhost
+# Do not proxy 127.0.0.1:9001 to the internet. Reach the admin UI and metrics
+# over an SSH tunnel or a firewalled private network instead.
