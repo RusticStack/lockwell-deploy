@@ -15,7 +15,7 @@ WORKDIR /tmp/dl
 # asset names, so the same Dockerfile builds correctly on x86-64 and ARM hosts.
 RUN set -eu; \
     arch="$(dpkg --print-architecture)"; \
-    base="https://github.com/KelpHect/lockwell-deploy/releases/download/v${LOCKWELL_VERSION}"; \
+    base="https://github.com/RusticStack/lockwell-deploy/releases/download/v${LOCKWELL_VERSION}"; \
     asset="lockwell-${LOCKWELL_VERSION}-linux-${arch}.tar.gz"; \
     curl -fsSLO "${base}/${asset}"; \
     curl -fsSLO "${base}/SHA256SUMS"; \
