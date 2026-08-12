@@ -22,7 +22,29 @@ drill are required before apply can become launch evidence.
    `tofu validate`, and save a reviewed `tofu plan -out` artifact. The wrapper refuses relative paths, credential-bearing
    backend files, disabled encryption, and disabled locking; do not replace it with a bare `tofu init` for an apply.
 4. Apply with `cell_backend_ips = []`. This allocates nodes, network, database, and load balancer but no public frontend.
-5. Provision and mount a dedicated LUKS/dm-crypt data volume at `/var/lib/lockwell` on each node. Stage checksum-pinned
+5. On each node, obtain a freshly attached, whole, blank data disk and stage a root-owned `0600` LUKS key file through
+   the approved secret-manager handoff. The handoff, provider identity, key generation, escrow, and recovery are
+   external operational controls: this repository neither generates nor accepts a raw key on the command line. Run the
+   destructive bootstrap only after independently confirming the resolved disk identity:
+
+   ```bash
+   device=/dev/sdb
+   identity="$(readlink -f -- "$device"):$(lsblk -dnro MAJ:MIN "$device")"
+   sudo scripts/bootstrap-encrypted-data-volume.sh --execute \
+     --device "$device" --mapper /dev/mapper/lockwell-data --mount /var/lib/lockwell \
+     --key-file /etc/lockwell/volume.key \
+     --evidence-report /var/lib/lockwell/bootstrap-evidence.json \
+     --confirm-device "$identity"
+   ```
+
+   The bootstrap refuses anything it cannot prove is safe before mutation: non-root execution; relative or symlinked
+   paths; anything other than a whole block disk; a mismatched exact device confirmation; mounted, in-use, root/boot,
+   partitioned, filesystem, or recognized-signature devices; non-root-owned/non-`0600` key files; existing mapper or
+   configuration conflicts. It creates LUKS2, formats only its newly opened mapper, mounts the filesystem by UUID with
+   `nodev,nosuid,noexec`, atomically adds non-conflicting `crypttab` and `fstab` entries, verifies dm-crypt ancestry,
+   and writes a root-only report containing digests only. It is not a live recovery or node-loss drill.
+
+   After that gate, stage checksum-pinned
    `lockwell` and `lockwelld` binaries, a validated production config that refers to `/etc/lockwell/tls.crt` and
    `/etc/lockwell/tls.key`, an environment file populated from the secret manager, and the node TLS material. Then run:
 
@@ -40,8 +62,8 @@ drill are required before apply can become launch evidence.
    or unencrypted data mount, and configuration validation failures. It installs a dedicated service account and a
    hardened systemd unit, and activates the daemon only after every preflight succeeds. It never partitions, formats,
    opens, or mounts a disk and it does not prove provider identity, secrets provenance, cluster membership, or
-   replication. Those remain configuration-management and live read-back gates. Read back every node identity and
-   private address before continuing.
+   replication, encrypted-volume secret-manager provenance, key escrow/recovery, or a live storage drill. Those remain
+   configuration-management and live read-back gates. Read back every node identity and private address before continuing.
 6. Run the three-backend gate with the CA that terminates each private backend connection:
 
    ```bash
