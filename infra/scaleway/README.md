@@ -24,8 +24,23 @@ drill are required before apply can become launch evidence.
 4. Apply with `cell_backend_ips = []`. This allocates nodes, network, database, and load balancer but no public frontend.
 5. Bootstrap disks, encryption keys, TLS, Lockwell configuration, and three-replica cluster membership through the
    reviewed configuration-management path. Read back every node identity and private address.
-6. Run health, storage, replication, retention, backup, restore, scrub, repair, and node-loss tests.
-7. Supply exactly the three validated private addresses to activate the frontend. Add provider-managed TLS or reviewed
+6. Run the three-backend gate with the CA that terminates each private backend connection:
+
+   ```bash
+   scripts/verify-cell-backends.sh \
+     --ca-file /absolute/path/to/private-backend-ca.pem \
+     --report /absolute/path/to/cell-backends-readiness.json \
+     https://10.0.0.11:9000 https://10.0.0.12:9000 https://10.0.0.13:9000
+   ```
+
+   It refuses relative paths, unsafe URLs, duplicate backends, TLS verification bypasses, failed HTTP probes, invalid
+   readiness JSON, and database or storage checks that are absent, failed, or `unchecked`. The `0600` JSON report records
+   the UTC check time, each backend host, and only a SHA-256 digest of its readiness body; it is pre-load-balancer
+   activation evidence, not proof that the provider apply succeeded, that those URLs identify the intended nodes, or that
+   replication is healthy.
+7. Run the remaining storage, replication, retention, backup, restore, scrub, repair, and node-loss tests. Keep their
+   evidence with the readiness report.
+8. Supply exactly the three validated private addresses to activate the frontend. Add provider-managed TLS or reviewed
    TLS passthrough before public DNS points to it.
 
 Offer and OS variables are provider lookups because availability varies by zone. A failed lookup is an honest capacity
