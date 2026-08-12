@@ -147,8 +147,8 @@ grep -Fxq "lockwell-data UUID=aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee $key_file luk
 grep -Fxq "UUID=11111111-2222-4333-8444-555555555555 $mount_path ext4 defaults,nodev,nosuid,noexec 0 2" "$test_root/etc/fstab"
 [[ $("$fake_bin/stat" -c '%u:%g:%a' "$report") == '0:0:600' ]]
 grep -Eq '"device_identity_sha256":"[0-9a-f]{64}"' "$report"
-! grep -Fq "$device" "$report"
-! grep -Fq "$key_file" "$report"
+if grep -Fq "$device" "$report"; then echo 'evidence report leaked raw device path' >&2; exit 1; fi
+if grep -Fq "$key_file" "$report"; then echo 'evidence report leaked raw key-file path' >&2; exit 1; fi
 
 assert_denied_before_format() {
   local scenario=$1 message=$2
