@@ -93,27 +93,25 @@ enable_line=$(grep -n '^systemctl enable ' "$install_log" | cut -d: -f1)
 
 MOUNT_SCENARIO=unencrypted; export MOUNT_SCENARIO
 if run_installer 2>/dev/null; then echo 'expected unencrypted mount to fail' >&2; exit 1; fi
-! grep -q '^systemctl enable ' "$install_log"
+if grep -q '^systemctl enable ' "$install_log"; then echo 'unencrypted mount reached activation' >&2; exit 1; fi
 unset MOUNT_SCENARIO
 
 VALIDATE_SCENARIO=invalid; export VALIDATE_SCENARIO
 if run_installer 2>/dev/null; then echo 'expected invalid config to fail' >&2; exit 1; fi
-! grep -q '^systemctl enable ' "$install_log"
+if grep -q '^systemctl enable ' "$install_log"; then echo 'invalid config reached activation' >&2; exit 1; fi
 unset VALIDATE_SCENARIO
 
 bad_sha=$lockwell_sha
 lockwell_sha=$(printf '%064d' 0)
 if run_installer 2>/dev/null; then echo 'expected checksum mismatch to fail' >&2; exit 1; fi
-! grep -q '^systemctl enable ' "$install_log"
+if grep -q '^systemctl enable ' "$install_log"; then echo 'checksum mismatch reached activation' >&2; exit 1; fi
 lockwell_sha=$bad_sha
 
-ln -s "$source_dir/tls.key" "$source_dir/tls-link.key"
-tls_key="$source_dir/tls.key"
 mv "$source_dir/tls.key" "$source_dir/tls-real.key"
 ln -s "$source_dir/tls-real.key" "$source_dir/tls.key"
 if [[ -L $source_dir/tls.key ]]; then
   if run_installer 2>/dev/null; then echo 'expected symbolic-link input to fail' >&2; exit 1; fi
-  ! grep -q '^systemctl enable ' "$install_log"
+  if grep -q '^systemctl enable ' "$install_log"; then echo 'symbolic-link input reached activation' >&2; exit 1; fi
 else
   echo 'SKIP: filesystem cannot create symbolic links; run this denial check on Linux' >&2
 fi

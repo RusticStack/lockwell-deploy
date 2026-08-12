@@ -20,8 +20,8 @@ fail() {
 }
 
 [[ $# -eq 20 ]] || usage
-declare lockwelld_bin= lockwelld_sha256= lockwell_bin= lockwell_sha256=
-declare config= env_file= tls_cert= tls_key= data_mount= unit_template=
+declare lockwelld_bin='' lockwelld_sha256='' lockwell_bin='' lockwell_sha256=''
+declare config='' env_file='' tls_cert='' tls_key='' data_mount='' unit_template=''
 while [[ $# -gt 0 ]]; do
   [[ $# -ge 2 ]] || usage
   case "$1" in
