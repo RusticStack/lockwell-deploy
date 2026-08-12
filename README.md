@@ -6,6 +6,12 @@ path and is not presented as hosted HA.
 
 Run **Lockwell**, a single-node, S3-compatible object store, on your own infrastructure.
 
+Lockwell and this first-party deployment tooling are **source-available under PolyForm Noncommercial 1.0.0**, not OSI
+Open Source. Commercial deployment—including TangibleShift ERP, paid use, resale, managed hosting, or OEM use—requires
+an explicit written commercial grant. See [`LICENSE`](LICENSE), [`NOTICE`](NOTICE), and
+[`COMMERCIAL-LICENSE.md`](COMMERCIAL-LICENSE.md). The downloaded release binaries must carry matching terms; this
+repository does not retroactively relicense older release assets.
+
 Lockwell runs as **one container** (or one binary) backed by **one data directory**: the S3 API, the native JSON API,
 the embedded metadata engine, and always-on at-rest encryption, all in one process. There is **no external database,
 message broker, or cache** to run alongside it.
