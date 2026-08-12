@@ -7,3 +7,11 @@
 metadata-backup*.bin
 lockwell-data/
 *.tar.gz
+
+# OpenTofu/Terraform local state and plans. Production state must use an encrypted remote backend.
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+terraform.tfvars
+crash.log

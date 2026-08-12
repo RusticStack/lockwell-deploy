@@ -1,5 +1,9 @@
 # Lockwell deployment
 
+Hosted Phase 3 infrastructure starts in [`infra/scaleway`](infra/scaleway/README.md). It provisions a deliberately
+fail-closed three-node EU pilot topology; the Compose deployment below remains the supported single-node self-hosted
+path and is not presented as hosted HA.
+
 Run **Lockwell**, a single-node, S3-compatible object store, on your own infrastructure.
 
 Lockwell runs as **one container** (or one binary) backed by **one data directory**: the S3 API, the native JSON API,
