@@ -1,0 +1,26 @@
+name: Scaleway fail-closed contract
+
+on:
+  pull_request:
+    paths:
+      - "infra/scaleway/**"
+      - "scripts/test-scaleway-no-public-frontend.sh"
+      - ".github/workflows/scaleway-fail-closed.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "infra/scaleway/**"
+      - "scripts/test-scaleway-no-public-frontend.sh"
+      - ".github/workflows/scaleway-fail-closed.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  no-public-s3-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert the hosted-cell module cannot serve S3 traffic
+        run: bash scripts/test-scaleway-no-public-frontend.sh

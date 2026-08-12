@@ -40,16 +40,6 @@ variable "ssh_public_key" {
   nullable    = false
 }
 
-variable "cell_backend_ips" {
-  description = "Three private cell IPs after bootstrap. Keep empty until addresses are read back from the provider."
-  type        = list(string)
-  default     = []
-  validation {
-    condition     = length(var.cell_backend_ips) == 0 || length(var.cell_backend_ips) == 3
-    error_message = "cell_backend_ips must be empty during allocation or contain exactly three private addresses."
-  }
-}
-
 variable "control_plane_db_user" {
   description = "Initial PostgreSQL role name."
   type        = string

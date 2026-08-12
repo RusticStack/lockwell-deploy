@@ -7,6 +7,3 @@ baremetal_os_version      = "24.04 LTS (Noble Numbat)"
 ssh_public_key            = "ssh-ed25519 REPLACE_WITH_OPERATOR_PUBLIC_KEY"
 control_plane_db_user     = "lockwell_saas"
 control_plane_db_password = "INJECT_FROM_SECRET_MANAGER"
-
-# Populate only after bootstrap/readiness passes. This activates the frontend.
-cell_backend_ips = []
