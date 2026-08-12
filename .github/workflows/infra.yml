@@ -4,6 +4,12 @@ on:
   pull_request:
     paths:
       - ".github/workflows/infra.yml"
+      - "LICENSE"
+      - "NOTICE"
+      - "COMMERCIAL-LICENSE.md"
+      - "THIRD_PARTY_NOTICES.md"
+      - "README.md"
+      - "Dockerfile"
       - "infra/**"
       - "scripts/**"
       - "operations/**"
@@ -11,6 +17,12 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/infra.yml"
+      - "LICENSE"
+      - "NOTICE"
+      - "COMMERCIAL-LICENSE.md"
+      - "THIRD_PARTY_NOTICES.md"
+      - "README.md"
+      - "Dockerfile"
       - "infra/**"
       - "scripts/**"
       - "operations/**"
@@ -24,6 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: bash -n scripts/*.sh
+      - run: bash scripts/test-license-contract.sh
       - run: bash scripts/tofu-init-scaleway_test.sh
       - run: bash scripts/test-verify-cell-backends.sh
       - run: sudo --preserve-env=PATH bash scripts/test-install-cell-node.sh
