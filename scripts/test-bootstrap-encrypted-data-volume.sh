@@ -32,7 +32,7 @@ if [[ ${OSTYPE:-} == linux* ]]; then
   exec /usr/bin/stat "$@"
 fi
 if [[ $* == *'%u:%g:%a'* ]]; then
-  [[ ${SCENARIO:-success} == unsafe-key ]] && printf '0:0:644\n' || printf '0:0:600\n'
+  [[ ${EXPECT_UNSAFE_KEY:-0} == 1 ]] && printf '0:0:644\n' || printf '0:0:600\n'
 elif [[ $* == *'%u:%g'* ]]; then
   printf '0:0\n'
 elif [[ $* == *'%u'* ]]; then
@@ -180,7 +180,9 @@ fi
 ! grep -q '^luksFormat ' "$log_file" || { echo 'bad confirmation reached formatting' >&2; exit 1; }
 
 chmod 0644 "$key_file"
+EXPECT_UNSAFE_KEY=1; export EXPECT_UNSAFE_KEY
 assert_denied_before_format success 'unsafe key permissions'
+unset EXPECT_UNSAFE_KEY
 chmod 0600 "$key_file"
 
 assert_rollback_after_mutation_failure() {
