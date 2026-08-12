@@ -5,16 +5,27 @@ on:
     paths:
       - ".github/workflows/infra.yml"
       - "infra/**"
+      - "scripts/**"
+      - "operations/**"
   push:
     branches: [main]
     paths:
       - ".github/workflows/infra.yml"
       - "infra/**"
+      - "scripts/**"
+      - "operations/**"
 
 permissions:
   contents: read
 
 jobs:
+  scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash -n scripts/*.sh
+      - run: shellcheck scripts/*.sh
+
   validate:
     runs-on: ubuntu-latest
     defaults:

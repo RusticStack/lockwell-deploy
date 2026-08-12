@@ -7,6 +7,9 @@
 metadata-backup*.bin
 lockwell-data/
 *.tar.gz
+*.dump.age
+*.dump.age.sha256
+*.dump.age.json
 
 # OpenTofu/Terraform local state and plans. Production state must use an encrypted remote backend.
 **/.terraform/
