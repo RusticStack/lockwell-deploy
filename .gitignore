@@ -17,4 +17,6 @@ lockwell-data/
 *.tfstate.*
 *.tfplan
 terraform.tfvars
+*.s3.tfbackend
+!*.s3.tfbackend.example
 crash.log
