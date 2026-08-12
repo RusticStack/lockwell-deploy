@@ -1,0 +1,66 @@
+rule_files:
+  - lockwell-saas.rules.yml
+
+evaluation_interval: 1m
+
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'up{job="lockwell-saas"}'
+        values: '0x5'
+      - series: 'lockwell_saas_outbox_dead_letter'
+        values: '1x5'
+      - series: 'lockwell_saas_meter_exports_dead_letter'
+        values: '0x5'
+      - series: 'lockwell_saas_provisions_failed'
+        values: '1x5'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: LockwellSaaSControlPlaneDown
+        exp_alerts:
+          - exp_labels:
+              job: lockwell-saas
+              severity: critical
+            exp_annotations:
+              summary: Lockwell hosted control plane is not scrapeable
+              runbook_url: https://github.com/RusticStack/lockwell-deploy/blob/main/operations/hosted-monitoring.md#lockwellsaascontrolplanedown
+      - eval_time: 3m
+        alertname: LockwellSaaSDeadLetterPresent
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+            exp_annotations:
+              summary: Lockwell hosted control-plane work reached a dead letter
+              runbook_url: https://github.com/RusticStack/lockwell-deploy/blob/main/operations/hosted-monitoring.md#lockwellsaasdeadletterpresent
+      - eval_time: 3m
+        alertname: LockwellSaaSProvisionFailure
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+            exp_annotations:
+              summary: A hosted tenant provision is in failed state
+              runbook_url: https://github.com/RusticStack/lockwell-deploy/blob/main/operations/hosted-monitoring.md#lockwellsaasprovisionfailure
+
+  - interval: 1m
+    input_series:
+      - series: 'lockwell_saas_stripe_events_unprocessed'
+        values: '1x20'
+      - series: 'lockwell_saas_outbox_pending'
+        values: '2x20'
+    alert_rule_test:
+      - eval_time: 16m
+        alertname: LockwellSaaSStripeEventBacklog
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+            exp_annotations:
+              summary: Verified Stripe events are not completing
+              runbook_url: https://github.com/RusticStack/lockwell-deploy/blob/main/operations/hosted-monitoring.md#lockwellsaasstripeeventbacklog
+      - eval_time: 16m
+        alertname: LockwellSaaSOutboxBacklog
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+            exp_annotations:
+              summary: Lockwell hosted control-plane outbox is not draining
+              runbook_url: https://github.com/RusticStack/lockwell-deploy/blob/main/operations/hosted-monitoring.md#lockwellsaasoutboxbacklog

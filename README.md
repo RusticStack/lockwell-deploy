@@ -32,6 +32,7 @@ are attached to each [release](https://github.com/RusticStack/lockwell-deploy/re
 | `examples/Caddyfile` | TLS-terminating reverse proxy (automatic HTTPS). |
 | `examples/nginx.conf` | TLS-terminating reverse proxy (nginx). |
 | `operations/hosted-control-plane-backup.md` | Encrypted PostgreSQL backup and isolated restore-verification contract for hosted SaaS. |
+| `operations/hosted-monitoring.md` | Protected SaaS scrape, tested alert, routing, escalation, and incident-response contract. |
 
 ---
 

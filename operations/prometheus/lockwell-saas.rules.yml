@@ -1,0 +1,48 @@
+groups:
+  - name: lockwell-saas-control-plane
+    interval: 30s
+    rules:
+      - alert: LockwellSaaSControlPlaneDown
+        expr: up{job="lockwell-saas"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Lockwell hosted control plane is not scrapeable
+          runbook_url: https://github.com/RusticStack/lockwell-deploy/blob/main/operations/hosted-monitoring.md#lockwellsaascontrolplanedown
+
+      - alert: LockwellSaaSDeadLetterPresent
+        expr: lockwell_saas_outbox_dead_letter > 0 or lockwell_saas_meter_exports_dead_letter > 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Lockwell hosted control-plane work reached a dead letter
+          runbook_url: https://github.com/RusticStack/lockwell-deploy/blob/main/operations/hosted-monitoring.md#lockwellsaasdeadletterpresent
+
+      - alert: LockwellSaaSStripeEventBacklog
+        expr: lockwell_saas_stripe_events_unprocessed > 0
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: Verified Stripe events are not completing
+          runbook_url: https://github.com/RusticStack/lockwell-deploy/blob/main/operations/hosted-monitoring.md#lockwellsaasstripeeventbacklog
+
+      - alert: LockwellSaaSOutboxBacklog
+        expr: lockwell_saas_outbox_pending > 0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: Lockwell hosted control-plane outbox is not draining
+          runbook_url: https://github.com/RusticStack/lockwell-deploy/blob/main/operations/hosted-monitoring.md#lockwellsaasoutboxbacklog
+
+      - alert: LockwellSaaSProvisionFailure
+        expr: lockwell_saas_provisions_failed > 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: A hosted tenant provision is in failed state
+          runbook_url: https://github.com/RusticStack/lockwell-deploy/blob/main/operations/hosted-monitoring.md#lockwellsaasprovisionfailure

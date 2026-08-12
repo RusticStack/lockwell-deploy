@@ -26,6 +26,24 @@ jobs:
       - run: bash -n scripts/*.sh
       - run: shellcheck scripts/*.sh
 
+  monitoring:
+    runs-on: ubuntu-latest
+    env:
+      PROMETHEUS_VERSION: 3.13.2
+      PROMETHEUS_SHA256: 0e8c4d46101bd025ea8265e377d2caabc57f488fc1be1c367f37db69ea41be6f
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned promtool
+        run: |
+          archive="prometheus-${PROMETHEUS_VERSION}.linux-amd64.tar.gz"
+          curl --fail --silent --show-error --location --output "${archive}" \
+            "https://github.com/prometheus/prometheus/releases/download/v${PROMETHEUS_VERSION}/${archive}"
+          echo "${PROMETHEUS_SHA256}  ${archive}" | sha256sum --check --strict
+          tar -xzf "${archive}"
+          sudo install "prometheus-${PROMETHEUS_VERSION}.linux-amd64/promtool" /usr/local/bin/promtool
+      - run: promtool check rules operations/prometheus/lockwell-saas.rules.yml
+      - run: promtool test rules operations/prometheus/lockwell-saas.rules.test.yml
+
   validate:
     runs-on: ubuntu-latest
     defaults:
