@@ -27,6 +27,7 @@ jobs:
       - run: bash scripts/tofu-init-scaleway_test.sh
       - run: bash scripts/test-verify-cell-backends.sh
       - run: sudo --preserve-env=PATH bash scripts/test-install-cell-node.sh
+      - run: sudo --preserve-env=PATH bash scripts/test-bootstrap-encrypted-data-volume.sh
       - run: shellcheck scripts/*.sh
 
   monitoring:
