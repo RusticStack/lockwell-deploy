@@ -33,7 +33,7 @@ trap 'rm -f -- "${partial_path}" "${checksum_path}.partial" "${manifest_path}.pa
   exit 73
 }
 
-pg_dump --format=custom --compress=6 --no-owner --no-privileges --dbname="${LOCKWELL_SAAS_DATABASE_URL}" \
+PGDATABASE="${LOCKWELL_SAAS_DATABASE_URL}" pg_dump --format=custom --compress=6 --no-owner --no-privileges \
   | age --recipient "${LOCKWELL_BACKUP_AGE_RECIPIENT}" --output "${partial_path}"
 
 archive_bytes=$(stat -c '%s' "${partial_path}")

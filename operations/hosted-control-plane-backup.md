@@ -38,11 +38,11 @@ Create a new empty database whose name starts with `lockwell_restore_verify_`. U
 testing disaster recovery. The verification script refuses any other database name and any non-empty target:
 
 ```bash
+export LOCKWELL_RESTORE_VERIFY_DATABASE_URL='postgresql://.../lockwell_restore_verify_20260812'
 ./scripts/verify-hosted-control-plane-restore.sh \
   /recovery/lockwell-saas-postgres-YYYYMMDDTHHMMSSZ.dump.age \
   /recovery/lockwell-saas-postgres-YYYYMMDDTHHMMSSZ.dump.age.sha256 \
-  /run/secrets/lockwell-backup-age-identity \
-  'postgresql://.../lockwell_restore_verify_20260812'
+  /run/secrets/lockwell-backup-age-identity
 ```
 
 The drill verifies the ciphertext checksum, decrypts only through pipes, checks archive readability, restores with
