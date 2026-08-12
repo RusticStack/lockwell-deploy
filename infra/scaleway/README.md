@@ -22,8 +22,26 @@ drill are required before apply can become launch evidence.
    `tofu validate`, and save a reviewed `tofu plan -out` artifact. The wrapper refuses relative paths, credential-bearing
    backend files, disabled encryption, and disabled locking; do not replace it with a bare `tofu init` for an apply.
 4. Apply with `cell_backend_ips = []`. This allocates nodes, network, database, and load balancer but no public frontend.
-5. Bootstrap disks, encryption keys, TLS, Lockwell configuration, and three-replica cluster membership through the
-   reviewed configuration-management path. Read back every node identity and private address.
+5. Provision and mount a dedicated LUKS/dm-crypt data volume at `/var/lib/lockwell` on each node. Stage checksum-pinned
+   `lockwell` and `lockwelld` binaries, a validated production config that refers to `/etc/lockwell/tls.crt` and
+   `/etc/lockwell/tls.key`, an environment file populated from the secret manager, and the node TLS material. Then run:
+
+   ```bash
+   sudo scripts/install-cell-node.sh \
+     --lockwelld-bin /absolute/staging/lockwelld --lockwelld-sha256 LOCKWELLD_SHA256 \
+     --lockwell-bin /absolute/staging/lockwell --lockwell-sha256 LOCKWELL_SHA256 \
+     --config /absolute/staging/lockwell.toml --env-file /absolute/staging/lockwelld.env \
+     --tls-cert /absolute/staging/tls.crt --tls-key /absolute/staging/tls.key \
+     --data-mount /var/lib/lockwell \
+     --unit-template /absolute/checkout/operations/systemd/lockwelld.service
+   ```
+
+   The installer refuses non-root execution, relative or symlinked inputs, checksum mismatches, an ordinary directory
+   or unencrypted data mount, and configuration validation failures. It installs a dedicated service account and a
+   hardened systemd unit, and activates the daemon only after every preflight succeeds. It never partitions, formats,
+   opens, or mounts a disk and it does not prove provider identity, secrets provenance, cluster membership, or
+   replication. Those remain configuration-management and live read-back gates. Read back every node identity and
+   private address before continuing.
 6. Run the three-backend gate with the CA that terminates each private backend connection:
 
    ```bash
