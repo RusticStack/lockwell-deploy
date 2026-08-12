@@ -4,8 +4,12 @@ This OpenTofu/Terraform module allocates the first reproducible EU hosted topolo
 
 - three Elastic Metal nodes on one private network;
 - an HA managed PostgreSQL control-plane database with backups enabled;
-- a public load balancer attached to the private network;
-- no public S3 frontend until exactly three read-back private cell addresses are supplied.
+- no public load balancer, public IP, or S3 frontend.
+
+This module is deliberately allocation-only. Lockwell's current cluster-membership and replica runtime does **not**
+provide multi-node metadata consistency: each node has an independent embedded metadata authority. Routing S3 writes
+across the three cells would therefore create a split-brain, multi-writer deployment. Health and readiness checks cannot
+make that safe, so there is no input or hidden override that activates a frontend.
 
 It does not claim a completed production deployment. Provider credentials, account/project approval, an approved
 remote-state bucket, DNS/TLS, node disk layout, Lockwell bootstrap, off-site backup, monitoring, and a node-loss/rebuild
@@ -21,7 +25,8 @@ drill are required before apply can become launch evidence.
 3. Run `scripts/tofu-init-scaleway.sh /absolute/path/to/backend.s3.tfbackend`, then `tofu fmt -check -recursive`,
    `tofu validate`, and save a reviewed `tofu plan -out` artifact. The wrapper refuses relative paths, credential-bearing
    backend files, disabled encryption, and disabled locking; do not replace it with a bare `tofu init` for an apply.
-4. Apply with `cell_backend_ips = []`. This allocates nodes, network, database, and load balancer but no public frontend.
+4. Apply the allocation-only module. It allocates the cells, private network, and control-plane database; it creates no
+   public S3 address, listener, load balancer, backend pool, or frontend.
 5. On each node, obtain a freshly attached, whole, blank data disk and stage a root-owned `0600` LUKS key file through
    the approved secret-manager handoff. The handoff, provider identity, key generation, escrow, and recovery are
    external operational controls: this repository neither generates nor accepts a raw key on the command line. Run the
@@ -64,7 +69,8 @@ drill are required before apply can become launch evidence.
    opens, or mounts a disk and it does not prove provider identity, secrets provenance, cluster membership, or
    replication, encrypted-volume secret-manager provenance, key escrow/recovery, or a live storage drill. Those remain
    configuration-management and live read-back gates. Read back every node identity and private address before continuing.
-6. Run the three-backend gate with the CA that terminates each private backend connection:
+6. If the cells are used for non-serving validation, run the three-node readiness check with the CA that terminates each
+   private node connection:
 
    ```bash
    scripts/verify-cell-backends.sh \
@@ -73,15 +79,27 @@ drill are required before apply can become launch evidence.
      https://10.0.0.11:9000 https://10.0.0.12:9000 https://10.0.0.13:9000
    ```
 
-   It refuses relative paths, unsafe URLs, duplicate backends, TLS verification bypasses, failed HTTP probes, invalid
+   It refuses relative paths, unsafe URLs, duplicate endpoints, TLS verification bypasses, failed HTTP probes, invalid
    readiness JSON, and database or storage checks that are absent, failed, or `unchecked`. The `0600` JSON report records
-   the UTC check time, each backend host, and only a SHA-256 digest of its readiness body; it is pre-load-balancer
-   activation evidence, not proof that the provider apply succeeded, that those URLs identify the intended nodes, or that
-   replication is healthy.
+   the UTC check time, each node host, and only a SHA-256 digest of its readiness body; it is diagnostic evidence, not
+   proof that the provider apply succeeded, that those URLs identify the intended nodes, or that replication is healthy.
 7. Run the remaining storage, replication, retention, backup, restore, scrub, repair, and node-loss tests. Keep their
    evidence with the readiness report.
-8. Supply exactly the three validated private addresses to activate the frontend. Add provider-managed TLS or reviewed
-   TLS passthrough before public DNS points to it.
+
+## Public-serving blocker
+
+Do not add a Scaleway load-balancer backend or frontend to this module until an authoritative metadata and routing design
+has been implemented and independently verified. A public listener must use one of these safe designs:
+
+- **Single authoritative writer:** route all writes, metadata mutations, and their reads to one metadata authority, with
+  documented fencing and failover; any replica/read routing must preserve that authority's consistency guarantees.
+- **Real shared or consensus metadata:** replace the independent embedded authorities with metadata replication that has
+  an explicit consistency model, quorum/fencing behavior, failure recovery, and end-to-end multi-node tests.
+
+Provider-managed TLS, backend health checks, three successful `/readyz` responses, and a replica-membership report do
+not satisfy this blocker. They may become parts of a reviewed serving design, but must not be used as a proxy for
+metadata consistency. The static `scripts/test-scaleway-no-public-frontend.sh` contract prevents accidental reintroduction of
+the forbidden `scaleway_lb_backend` and `scaleway_lb_frontend` serving resources.
 
 Offer and OS variables are provider lookups because availability varies by zone. A failed lookup is an honest capacity
 blocker; do not silently substitute smaller hardware. Reconcile the offer with a current provider quote and the core
@@ -91,4 +109,4 @@ References: [OpenTofu S3 backend](https://opentofu.org/docs/language/settings/ba
 [Scaleway Object Storage endpoint](https://www.scaleway.com/en/docs/object-storage/api-cli/object-storage-api/),
 [bare-metal server](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/baremetal_server),
 [RDB instance](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/rdb_instance), and
-[load balancer](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/lb).
+[the Scaleway provider documentation](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs).

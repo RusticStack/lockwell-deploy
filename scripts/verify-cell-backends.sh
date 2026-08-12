@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Verify three private cell backends before they are eligible for load-balancer activation.
+# Verify three private hosted cells for non-serving diagnostic evidence.
 set -euo pipefail
 
 readonly connect_timeout_seconds=5
