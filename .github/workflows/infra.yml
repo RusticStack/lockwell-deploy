@@ -1,0 +1,30 @@
+name: Infrastructure
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/infra.yml"
+      - "infra/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/infra.yml"
+      - "infra/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/scaleway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.12.5
+      - run: tofu fmt -check -recursive
+      - run: tofu init -backend=false
+      - run: tofu validate
