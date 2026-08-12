@@ -24,6 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: bash -n scripts/*.sh
+      - run: bash scripts/tofu-init-scaleway_test.sh
       - run: shellcheck scripts/*.sh
 
   monitoring:
