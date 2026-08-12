@@ -179,7 +179,9 @@ if PATH="$fake_bin:$PATH" COMMAND_LOG="$log_file" MAPPER_PATH="$mapper" MOUNT_PA
 fi
 ! grep -q '^luksFormat ' "$log_file" || { echo 'bad confirmation reached formatting' >&2; exit 1; }
 
-assert_denied_before_format unsafe-key 'unsafe key permissions'
+chmod 0644 "$key_file"
+assert_denied_before_format success 'unsafe key permissions'
+chmod 0600 "$key_file"
 
 assert_rollback_after_mutation_failure() {
   local scenario=$1 message=$2
