@@ -1,0 +1,35 @@
+[Unit]
+Description=Lockwell Object Storage
+After=network-online.target
+Wants=network-online.target
+RequiresMountsFor=/var/lib/lockwell
+
+[Service]
+Type=simple
+User=lockwell
+Group=lockwell
+EnvironmentFile=/etc/lockwell/lockwelld.env
+ExecStartPre=/usr/local/bin/lockwell config validate -c /etc/lockwell/lockwell.toml
+ExecStart=/usr/local/bin/lockwelld -config /etc/lockwell/lockwell.toml
+Restart=on-failure
+RestartSec=5s
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/lockwell
+
+[Install]
+WantedBy=multi-user.target
